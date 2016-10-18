@@ -3,6 +3,7 @@ import rx.Observable;
 import rx.Observer;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
+import rx.subjects.AsyncSubject;
 import rx.subjects.PublishSubject;
 
 public class RxTest {
@@ -40,6 +41,22 @@ public class RxTest {
         testSubscriber.assertCompleted();
         testSubscriber.assertNoErrors();
         testSubscriber.assertValues("test1", "test2", "test3");
+    }
+
+    @Test
+    public void TestSubscribeToSubjectAfterOnCompleted() throws Exception {
+        TestSubscriber<String> testSubscriber = TestSubscriber.create(new SystemOutObserver<>());
+
+        AsyncSubject<String> subject = AsyncSubject.create();
+        subject.onNext("test1");
+        subject.onNext("test2");
+        subject.onCompleted();
+        subject.subscribe(testSubscriber);
+
+        testSubscriber.awaitTerminalEvent();
+        testSubscriber.assertCompleted();
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertValues("test2");
     }
 
     static class SystemOutObserver<T> implements Observer<T> {
