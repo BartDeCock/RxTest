@@ -7,6 +7,14 @@ import rx.schedulers.Schedulers;
 import rx.subjects.AsyncSubject;
 import rx.subjects.PublishSubject;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Collections.singletonList;
+import static rx.Observable.defer;
+import static rx.Observable.from;
+
 public class RxTest {
 
 
@@ -106,6 +114,25 @@ public class RxTest {
         testSubscriber.assertValues("testStream1_value1", "testStream2_value1", "testStream2_value2");
     }
 
+    @Test
+    public void testje() {
+        allPeople(0).subscribe(System.out::println);
+    }
+
+    class Person {}
+
+
+    Observable<Person> allPeople(int initialPage) {
+        Observable<Person> page = defer(() -> from(listPeople(initialPage)));
+        return page
+                .concatWith(defer(() -> allPeople(initialPage + 1)))
+                .takeUntil(page.isEmpty());
+
+    }
+
+    List<Person> listPeople(int page) {
+        return page < 2 ? singletonList(new Person()) : new ArrayList<>();
+    }
 
     static class SystemOutObserver<T> implements Observer<T> {
 
